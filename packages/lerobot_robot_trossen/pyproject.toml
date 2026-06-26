@@ -13,6 +13,9 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = ["lerobot[intelrealsense]>=0.5.1", "trossen_arm>=1.9.0", "trossen-slate>=0.0.3"]
 
+[project.scripts]
+trossen-mobileai-record = "lerobot_robot_trossen.trossen_mobileai_record:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["lerobot_robot_trossen"]

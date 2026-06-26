@@ -4,3 +4,4 @@ from .config_widowxai_follower import WidowXAIFollowerConfig
 from .widowxai_follower import WidowXAIFollower
 from .mobileai import MobileAIRobot
 from .config_mobileai import MobileAIRobotConfig
+from .realsense import TrossenRealSenseDepth, TrossenRealSenseDepthConfig
