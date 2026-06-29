@@ -158,6 +158,14 @@ class RgbdSidecarWriter:
             writer.writerows(self.rows)
 
 
+def _episode_buffer_size(dataset: LeRobotDataset) -> int:
+    writer = getattr(dataset, "writer", None)
+    episode_buffer = getattr(writer, "episode_buffer", None) if writer is not None else None
+    if not episode_buffer:
+        return 0
+    return int(episode_buffer.get("size", 0))
+
+
 @safe_stop_image_writer
 def record_loop(
     robot: Robot,
@@ -344,6 +352,16 @@ def record(
                     sidecar.clear_episode(dataset.num_episodes)
                     dataset.clear_episode_buffer()
                     continue
+
+                episode_size = _episode_buffer_size(dataset)
+                if episode_size == 0:
+                    sidecar.clear_episode(dataset.num_episodes)
+                    dataset.clear_episode_buffer()
+                    raise RuntimeError(
+                        "No frames were recorded for the current episode. "
+                        "This usually means the episode was exited before the first frame was added, "
+                        "or the recording loop never reached dataset.add_frame()."
+                    )
 
                 dataset.save_episode()
                 recorded_episodes += 1
