@@ -11,7 +11,7 @@ license = "Apache-2.0"
 license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
-dependencies = ["lerobot[intelrealsense]>=0.5.1", "trossen_arm>=1.9.0"]
+dependencies = ["lerobot[intelrealsense]>=0.5.1", "trossen_arm>=1.9.0,<1.10.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
