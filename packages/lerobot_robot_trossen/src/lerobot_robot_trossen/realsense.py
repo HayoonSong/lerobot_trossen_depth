@@ -18,7 +18,6 @@ from lerobot.cameras.configs import CameraConfig, ColorMode, Cv2Rotation
 from lerobot.cameras.utils import get_cv2_rotation
 from lerobot.utils.decorators import check_if_already_connected, check_if_not_connected
 from lerobot.utils.errors import DeviceNotConnectedError
-from lerobot.utils.import_utils import require_package
 
 try:
     import pyrealsense2 as rs
@@ -52,7 +51,11 @@ class TrossenRealSenseDepth(Camera):
     """RealSense camera that keeps RGB plus color-aligned raw depth for sidecar recording."""
 
     def __init__(self, config: TrossenRealSenseDepthConfig):
-        require_package(pkg_name, extra="intelrealsense", import_name="pyrealsense2")
+        if rs is None:
+            raise ImportError(
+                f"`pyrealsense2` is required for {self.__class__.__name__}. "
+                "Install the LeRobot intelrealsense extra or install pyrealsense2 in this environment."
+            )
         super().__init__(config)
 
         self.config = config
