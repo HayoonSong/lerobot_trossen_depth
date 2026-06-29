@@ -14,7 +14,6 @@ from lerobot.cameras import CameraConfig  # noqa: F401
 from lerobot.cameras.opencv import OpenCVCameraConfig  # noqa: F401
 from lerobot.cameras.realsense import RealSenseCameraConfig  # noqa: F401
 from lerobot.configs import parser
-from lerobot.configs.dataset import DatasetRecordConfig
 from lerobot.datasets import (
     LeRobotDataset,
     VideoEncodingManager,
@@ -24,7 +23,10 @@ from lerobot.datasets import (
 )
 from lerobot.processor import RobotAction, RobotObservation, RobotProcessorPipeline, make_default_processors
 from lerobot.robots import Robot, RobotConfig, make_robot_from_config  # noqa: F401
-from lerobot.scripts.lerobot_record import RecordConfig as _LeRobotRecordConfig  # noqa: F401
+from lerobot.scripts.lerobot_record import (
+    DatasetRecordConfig,
+    RecordConfig as _LeRobotRecordConfig,  # noqa: F401
+)
 from lerobot.teleoperators import Teleoperator, TeleoperatorConfig, make_teleoperator_from_config  # noqa: F401
 from lerobot.utils.constants import ACTION, OBS_STR
 from lerobot.utils.feature_utils import build_dataset_frame, combine_feature_dicts
