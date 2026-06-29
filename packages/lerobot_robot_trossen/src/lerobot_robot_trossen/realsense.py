@@ -18,11 +18,11 @@ from lerobot.cameras.configs import CameraConfig, ColorMode, Cv2Rotation
 from lerobot.cameras.utils import get_cv2_rotation
 from lerobot.utils.decorators import check_if_already_connected, check_if_not_connected
 from lerobot.utils.errors import DeviceNotConnectedError
-from lerobot.utils.import_utils import _pyrealsense2_available, require_package
+from lerobot.utils.import_utils import require_package
 
-if _pyrealsense2_available:
+try:
     import pyrealsense2 as rs
-else:
+except ImportError:
     rs = None
 
 logger = logging.getLogger(__name__)
