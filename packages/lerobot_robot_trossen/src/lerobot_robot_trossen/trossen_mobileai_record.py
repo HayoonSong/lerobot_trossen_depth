@@ -14,13 +14,11 @@ from lerobot.cameras import CameraConfig  # noqa: F401
 from lerobot.cameras.opencv import OpenCVCameraConfig  # noqa: F401
 from lerobot.cameras.realsense import RealSenseCameraConfig  # noqa: F401
 from lerobot.configs import parser
-from lerobot.datasets import (
-    LeRobotDataset,
-    VideoEncodingManager,
-    aggregate_pipeline_dataset_features,
-    create_initial_features,
-    safe_stop_image_writer,
-)
+from lerobot.datasets.feature_utils import build_dataset_frame, combine_feature_dicts
+from lerobot.datasets.image_writer import safe_stop_image_writer
+from lerobot.datasets.lerobot_dataset import LeRobotDataset
+from lerobot.datasets.pipeline_features import aggregate_pipeline_dataset_features, create_initial_features
+from lerobot.datasets.video_utils import VideoEncodingManager
 from lerobot.processor import RobotAction, RobotObservation, RobotProcessorPipeline, make_default_processors
 from lerobot.robots import Robot, RobotConfig, make_robot_from_config  # noqa: F401
 from lerobot.scripts.lerobot_record import (
@@ -29,7 +27,7 @@ from lerobot.scripts.lerobot_record import (
 )
 from lerobot.teleoperators import Teleoperator, TeleoperatorConfig, make_teleoperator_from_config  # noqa: F401
 from lerobot.utils.constants import ACTION, OBS_STR
-from lerobot.utils.feature_utils import build_dataset_frame, combine_feature_dicts
+from lerobot.utils.control_utils import init_keyboard_listener, is_headless, sanity_check_dataset_name
 from lerobot.utils.import_utils import register_third_party_plugins
 from lerobot.utils.robot_utils import precise_sleep
 from lerobot.utils.utils import init_logging, log_say
@@ -278,7 +276,7 @@ def record(
         repo_name = cfg.dataset.repo_id.split("/", 1)[-1]
         if repo_name.startswith("eval_"):
             raise ValueError("Dataset names starting with 'eval_' are reserved for policy evaluation.")
-        cfg.dataset.stamp_repo_id()
+        sanity_check_dataset_name(cfg.dataset.repo_id, None)
         dataset = LeRobotDataset.create(
             cfg.dataset.repo_id,
             cfg.dataset.fps,
@@ -289,10 +287,10 @@ def record(
             image_writer_processes=cfg.dataset.num_image_writer_processes,
             image_writer_threads=cfg.dataset.num_image_writer_threads_per_camera * len(robot.cameras),
             batch_encoding_size=cfg.dataset.video_encoding_batch_size,
-            camera_encoder=cfg.dataset.camera_encoder,
-            encoder_threads=cfg.dataset.encoder_threads,
+            vcodec=cfg.dataset.vcodec,
             streaming_encoding=cfg.dataset.streaming_encoding,
             encoder_queue_maxsize=cfg.dataset.encoder_queue_maxsize,
+            encoder_threads=cfg.dataset.encoder_threads,
         )
 
         sidecar = RgbdSidecarWriter(dataset.root, cfg.rgbd)
@@ -301,8 +299,6 @@ def record(
         if teleop is not None:
             teleop.connect()
         sidecar.initialize(robot)
-
-        from lerobot.common.control_utils import init_keyboard_listener, is_headless
 
         listener, events = init_keyboard_listener()
 
@@ -365,8 +361,6 @@ def record(
         if teleop and teleop.is_connected:
             teleop.disconnect()
         try:
-            from lerobot.common.control_utils import is_headless
-
             if not is_headless() and listener:
                 listener.stop()
         except Exception:
