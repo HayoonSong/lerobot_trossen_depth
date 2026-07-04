@@ -117,16 +117,20 @@ class RgbdSidecarWriter:
                 cv2.imwrite(str(color_path), cv2.cvtColor(rgbd_frame["color"], cv2.COLOR_RGB2BGR))
                 row["color_path"] = str(color_path.relative_to(self.root))
 
+            depth_mm = _raw_depth_to_mm(
+                rgbd_frame["depth"], rgbd_frame.get("depth_scale_m_per_unit")
+            )
+
             if self.cfg.save_depth:
                 depth_dir.mkdir(parents=True, exist_ok=True)
                 depth_path = depth_dir / stem
-                cv2.imwrite(str(depth_path), rgbd_frame["depth"])
+                cv2.imwrite(str(depth_path), depth_mm)
                 row["depth_path"] = str(depth_path.relative_to(self.root))
 
             if self.cfg.save_depth_vis:
                 depth_vis_dir.mkdir(parents=True, exist_ok=True)
                 depth_vis_path = depth_vis_dir / stem
-                cv2.imwrite(str(depth_vis_path), depth_to_visualization(rgbd_frame["depth"], self.cfg.max_depth_mm))
+                cv2.imwrite(str(depth_vis_path), depth_to_visualization(depth_mm, self.cfg.max_depth_mm))
                 row["depth_vis_path"] = str(depth_vis_path.relative_to(self.root))
 
             self.rows.append(row)
@@ -156,6 +160,18 @@ class RgbdSidecarWriter:
             writer = csv.DictWriter(f, fieldnames=list(self.rows[0].keys()))
             writer.writeheader()
             writer.writerows(self.rows)
+
+
+def _raw_depth_to_mm(depth, depth_scale_m_per_unit):
+    if depth_scale_m_per_unit is None:
+        raise RuntimeError("RGB-D camera did not provide depth_scale_m_per_unit.")
+
+    valid = (depth > 0) & (depth < 65535)
+    depth_mm = depth.copy()
+    depth_mm[:] = 0
+    depth_mm_float = depth.astype("float32") * float(depth_scale_m_per_unit) * 1000.0
+    depth_mm[valid] = depth_mm_float[valid].round().clip(1, 65534).astype(depth.dtype)
+    return depth_mm
 
 
 def _episode_buffer_size(dataset: LeRobotDataset) -> int:

@@ -341,6 +341,7 @@ class TrossenRealSenseDepth(Camera):
             return {
                 "color": self.latest_color_frame.copy(),
                 "depth": self.latest_depth_frame.copy(),
+                "depth_scale_m_per_unit": self.depth_scale,
                 "color_timestamp_ms": self.latest_color_timestamp_ms,
                 "depth_timestamp_ms": self.latest_depth_timestamp_ms,
                 "system_time_s": self.latest_capture_time_s,
@@ -354,7 +355,7 @@ class TrossenRealSenseDepth(Camera):
             "height": self.height,
             "fps": self.fps,
             "aligned_depth_to": "color",
-            "depth_unit": "uint16_depth_units",
+            "depth_unit": "uint16_mm",
             "depth_scale_m_per_unit": self.depth_scale,
             "intrinsics": self.intrinsics,
             "K": None if self.intrinsics is None else self.intrinsics["K"],
